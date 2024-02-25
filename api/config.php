@@ -13,7 +13,7 @@ define('PAYPAL_CANCEL_URL', 'http://localhost/e-commerce/cancel.php');
 define('PAYPAL_CURRENCY', 'EUR'); // set your currency here
  
 // Connect with the database
-$db = new mysqli('localhost', 'root', '', 'estore'); 
+$db = new mysqli('localhost', 'username', 'password', 'databasename'); 
  
 if ($db->connect_errno) {
     die("Connect failed: ". $db->connect_error);
