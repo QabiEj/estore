@@ -12,10 +12,14 @@
             $errors[] = 'Name is empty!';
         }
 
-        if($crud->create('categories', ['name' => $name]) === true) {
-            header('Location: index.php?action=create&status=success');
-        } else {
-            $errors = 'Something want wrong!';
+        try {
+            if($crud->create('categories', ['name' => $name]) === true) {
+                header('Location: index.php?action=create&status=success');
+            } else {
+                $errors = 'Something went wrong!';
+            }
+        } catch (PDOException $e) {
+            $errors[] = $e->getMessage();
         }
     }
 ?>

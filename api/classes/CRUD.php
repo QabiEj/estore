@@ -3,116 +3,110 @@
 include 'Database.php';
 
 class CRUD {
-    private $mysqli;
+    private $pdo;
 
     public function __construct() {
         $db = Database::getInstance();
-        $this->mysqli = $db->getConnection();
+        $this->pdo = $db->getConnection();
     }
 
     public function create($table, $data) {
-        $sql = "INSERT INTO `" . $table . "` SET ";
+        $columns = implode(", ", array_keys($data));
+        $values  = ":".implode(", :", array_keys($data));
 
-        
-        if(count($data)) {
-            $count = 1;
+        $sql = "INSERT INTO $table ($columns) VALUES ($values)";
 
-            foreach($data as $column => $value) {
-                if(count($data) > $count) {
-                    $sql .= "`".$column."`='".$this->mysqli->real_escape_string($value)."', ";
-                } else {
-                    $sql .= "`".$column."`='".$this->mysqli->real_escape_string($value)."'";
-                }
+        $stmt = $this->pdo->prepare($sql);
 
-                $count++;
-            }
+        foreach ($data as $key => &$val) {
+            $stmt->bindParam(":$key", $val);
         }
 
-        return $this->mysqli->query($sql) ? true : $this->mysqli->error;
+        return $stmt->execute() ? true : $stmt->errorInfo();
     }
-    
-    public function read($table, $condition = [], $limit = null, $order = []) {
-        $sql = "SELECT * FROM `".$table."`";
-        $items = [];
 
-        if(count($condition)) {
-            $sql .= " WHERE `".$condition['column']."`='".$condition['value']."'";
+    public function read($table, $condition = [], $limit = null, $order = []) {
+        $sql = "SELECT * FROM $table";
+
+        if(!empty($condition)) {
+            $sql .= " WHERE ".$condition['column']." = :value";
         }
 
-        if(count($order) == 2) {
+        if(!empty($order)) {
             $sql .= " ORDER BY " .$order['column'] ." " .$order['order'];
         }
-        
+
         if(!is_null($limit)) {
             $sql .= " LIMIT " .$limit;
         }
 
-        if($query = $this->mysqli->query($sql)) {
-            if($query->num_rows > 0) {
-                while($row = $query->fetch_assoc()) {
-                    $items[] = $row;
-                }
-            }
+        $stmt = $this->pdo->prepare($sql);
 
-            return $items;
-        } else {
-            return $this->mysqli->error;
+        if(!empty($condition)) {
+            $stmt->bindParam(':value', $condition['value']);
         }
+
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function update($table, $data, $condition = []) {
-        $sql = "UPDATE `".$table."` SET ";
+        $columns = "";
 
-        if(count($data)) {
-            $count = 1;
-
-            foreach($data as $column => $value) {
-                if(count($data) > $count) {
-                    $sql .= "`".$column."`='".$this->mysqli->real_escape_string($value)."', ";
-                } else {
-                    $sql .= "`".$column."`='".$this->mysqli->real_escape_string($value)."'";
-                }
-
-                $count++;
-            }
+        foreach($data as $key => $value) {
+            $columns .= "$key = :$key, ";
         }
 
-        if(count($condition)) {
-            $sql .= " WHERE `".$condition['column']."`='".$condition['value']."'";
+        $columns = rtrim($columns, ", ");
+
+        $sql = "UPDATE $table SET $columns";
+
+        if(!empty($condition)) {
+            $sql .= " WHERE ".$condition['column']." = :condition_value";
         }
 
-        return $this->mysqli->query($sql) ? true : $this->mysqli->error;
+        $stmt = $this->pdo->prepare($sql);
+
+        foreach ($data as $key => &$val) {
+            $stmt->bindParam(":$key", $val);
+        }
+
+        if(!empty($condition)) {
+            $stmt->bindParam(':condition_value', $condition['value']);
+        }
+
+        return $stmt->execute() ? true : $stmt->errorInfo();
     }
 
     public function delete($table, $condition = [], $limit = null) {
-        $sql = "DELETE FROM `".$table."`";
-        $items = [];
+        $sql = "DELETE FROM $table";
 
-        if(count($condition)) {
-            $sql .= " WHERE `".$condition['column']."`='".$condition['value']."'";
+        if(!empty($condition)) {
+            $sql .= " WHERE ".$condition['column']." = :value";
         }
 
         if(!is_null($limit)) {
             $sql .= " LIMIT " .$limit;
         }
 
-        return $this->mysqli->query($sql) ? true : $this->mysqli->error;
+        $stmt = $this->pdo->prepare($sql);
+
+        if(!empty($condition)) {
+            $stmt->bindParam(':value', $condition['value']);
+        }
+
+        return $stmt->execute() ? true : $stmt->errorInfo();
     }
 
     public function search($table, $column, $value) {
-        $sql = "SELECT * FROM `".$table."` WHERE `".$column."` LIKE '%".$value."%'";
-        $items = [];
+        $sql = "SELECT * FROM $table WHERE $column LIKE :value";
+        $value = "%$value%";
 
-        if($query = $this->mysqli->query($sql)) {
-            if($query->num_rows > 0) {
-                while($row = $query->fetch_assoc()) {
-                    $items[] = $row;
-                }
-            }
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':value', $value);
+        $stmt->execute();
 
-            return $items;
-        } else {
-            return $this->mysqli->error;
-        }
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

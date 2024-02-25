@@ -19,10 +19,14 @@
             header('Location: index.php');
         }
 
-        if($crud->update('categories', ['name' => $name], ['column' => 'id', 'value' => $id]) === true) {
-            header('Location: index.php?action=update&status=success');
-        } else {
-            $errors = 'Something want wrong!';
+        try {
+            if($crud->update('categories', ['name' => $name], ['column' => 'id', 'value' => $id]) === true) {
+                header('Location: index.php?action=update&status=success');
+            } else {
+                $errors = 'Something went wrong!';
+            }
+        } catch (PDOException $e) {
+            $errors[] = $e->getMessage();
         }
     }
 ?>
