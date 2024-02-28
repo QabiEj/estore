@@ -1,12 +1,26 @@
 {
-    "functions": {
-      "api/index.php": {
-        "runtime": "vercel-php@0.6.1",
-        "includeFiles": "api/classes/**"
-      }
-    },
-    "rewrites": [
-      { "source": "/favicon.ico", "destination": "https://juicy.vercel.app/favicon.ico" },
-      { "source": "/(.*)", "destination": "/api/index.php" }
-    ]
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "build": {
+    "env": {
+      "NODE_ENV": "production"
+    }
+  },
+  "buildCommand": "next build",
+  "cleanUrls": true,
+  "crons": [
+    {
+      "path": "/api/update",
+      "schedule": "0 0 * * *"
+    }
+  ],
+  "rewrites": [
+    { "source": "/favicon.ico", "destination": "https://juicy.vercel.app/favicon.ico" },
+    { "source": "/(.*)", "destination": "/pages/index.js" }
+  ]
 }
