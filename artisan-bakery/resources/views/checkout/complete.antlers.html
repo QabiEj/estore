@@ -1,0 +1,25 @@
+<section class="fluid-container pt-12 text-center">
+    {{ partial:typography/prose as="article" class="contents" }}
+        <h1>Checkout</h1>
+    {{ /partial:typography/prose }}
+</section>
+
+<main>
+    <div class="max-w-4xl mx-auto my-12 px-4">
+        <div class="flex flex-row w-full">
+            <div class="w-full">
+                <div class="max-w-lg">
+                    <h2 class="text-gray-900 font-bold text-2xl mb-4">
+                        Thanks for your purchase!
+                    </h2>
+
+                    <p>You've checked out successfully. Your order number is <strong>{{ sc:cart:title }}</strong>. You'll receive a confirmation email within the next few minutes.</p>
+                </div>
+            </div>
+
+            <div class="md:w-2/5">
+                {{ partial:checkout/cart }}
+            </div>
+        </div>
+    </div>
+</main>

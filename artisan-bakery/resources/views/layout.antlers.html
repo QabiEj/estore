@@ -1,0 +1,24 @@
+{{#
+    @name Layout
+    @desc The default layout file.
+#}}
+
+<!doctype html>
+<html lang="{{ site:short_locale }}" class="antialiased">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{ vite src="resources/css/site.css|resources/js/site.js" }}
+    {{ if {installed:statamic/seo-pro} }}
+        {{ seo_pro:meta }}
+    {{ else }}
+        <title>{{ title }} - {{ config:app:name }}</title>
+    {{ /if }}
+</head>
+<body class="flex flex-col min-h-screen bg-gray-100">
+    {{ partial:layout/header }}
+    {{ template_content }}
+    {{ partial:layout/footer }}
+</body>
+</html>

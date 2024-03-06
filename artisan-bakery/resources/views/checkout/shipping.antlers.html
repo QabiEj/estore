@@ -1,0 +1,89 @@
+{{# If there's nothing in the cart, redirect the user to the Cart page. #}}
+{{ if {sc:cart:count} === 0 }}
+    {{ redirect to="/cart" }}
+{{ /if }}
+
+{{# If there's no shipping methods available, redirect the user straight to shipping. #}}
+{{ if {sc:shipping:methods} | length === 0 }}
+    {{ redirect to="{site:url}/checkout/payment" }}
+{{ /if }}
+
+<section class="fluid-container pt-12 text-center">
+    {{ partial:typography/prose as="article" class="contents" }}
+        <h1>Checkout</h1>
+    {{ /partial:typography/prose }}
+</section>
+
+<main>
+    <div class="max-w-4xl mx-auto my-12 px-4">
+        <div class="flex flex-col md:flex-row w-full">
+            <div class="w-full">
+                <div class="max-w-lg">
+                    {{ partial:checkout/errors }}
+
+                    {{ sc:cart:update x-data="shippingForm" id="checkout-shipping-form" redirect="{site:url}/checkout/payment" @submit.prevent="submit" }}
+                        <h2 class="text-gray-900 font-bold text-2xl mb-4">
+                            Shipping
+                        </h2>
+
+                        <div class="grid md:grid-cols-12 gap-6 mb-12">
+                            {{ partial:components/forms/select_field width="100" handle="shipping_method" display="Shipping Method" required="true" }}
+                                {{ sc:shipping:methods }}
+                                    <option
+                                        value="{{ handle }}"
+                                        {{ if first }} selected {{ /if }}
+                                    >
+                                        {{ name }} ({{ cost }})
+                                    </option>
+                                {{ /sc:shipping:methods }}
+                            {{ /partial:components/forms/select_field }}
+
+                            <label for="showShippingNote" class="text-sm text-gray-700 flex flex-row items-center select-none md:col-span-12">
+                                <input
+                                    type="checkbox"
+                                    id="showShippingNote"
+                                    name="showShippingNote"
+                                    x-model="showShippingNote"
+                                    class="mr-2"
+                                    value="{{ old:showShippingNote }}"
+                                />
+
+                                Include a shipping note?
+                            </label>
+
+                            <template x-if="showShippingNote">
+                                {{ partial:components/forms/textarea_field width="100" handle="shipping_note" display="Shipping Note" }}
+                            </template>
+                        </div>
+
+                        <div class="my-6 flex justify-center">
+                            {{ partial:components/button label="Continue to Payment" type="submit" as="button" }}
+                        </div>
+                    {{ /sc:cart:update }}
+                </div>
+            </div>
+
+            <div class="w-full md:w-2/5 mb-4 md:mb-0">
+                {{ partial:checkout/cart }}
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('shippingForm', () => ({
+            isSubmitting: false,
+            showShippingNote: false,
+
+            submit() {
+                this.isSubmitting = true
+
+                this.$el.querySelector('button').disabled = true
+                this.$el.querySelector('button').classList.add('opacity-50')
+
+                this.$el.submit()
+            },
+        }))
+    })
+</script>
